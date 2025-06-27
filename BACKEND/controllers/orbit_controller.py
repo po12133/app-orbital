@@ -26,18 +26,26 @@ def primera_formula():
             stderr=subprocess.PIPE,
             text=True
         )
-        
+
         lines = result.stdout.splitlines()
         raw_data = []
 
         for line in lines:
             line = line.strip()
-            if line.startswith('[') and line.endswith(']'):
-                raw_data.append(line)
-        print("Borrame:", len(raw_data[0]))
+            # Ignora líneas vacías o que no contienen datos numéricos válidos
+            if not line or line.startswith('ALTITUDE') or 'TEMPS' in line:
+                continue
+
+            # Divide la línea por espacios múltiples, manteniendo los datos como strings
+            parts = line.split()
+
+            # Solo guarda si hay exactamente 14 elementos
+            if len(parts) == 14:
+                raw_data.append(parts)
+
         return jsonify({
             "codigo_salida": result.returncode,
-            "data": raw_data,  # ← aquí las listas en string sin tocar
+            "data": raw_data,  # ← sin convertir nada
             "errores": result.stderr
         })
 
