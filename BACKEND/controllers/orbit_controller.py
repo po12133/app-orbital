@@ -17,7 +17,7 @@ def primera_formula():
     if platform.system() == "Windows":
         exe = "orbit-k1.exe"
     else:
-        exe = "orbit-k1"
+        exe = "./orbit-k1"
 
     try:
         result = subprocess.run(
