@@ -51,27 +51,29 @@
        WRITE(*,*) 'TEMPS: ', T2-T1
        END
 
-      SUBROUTINE PRINT_JSON(TN, E, X, T)
-      IMPLICIT NONE
-      INTEGER :: TN, J
-      REAL*8 :: E(6), X(6), T
+       SUBROUTINE PRINT_JSON(E, X, T)
+       IMPLICIT NONE
+       REAL*8 E(6), X(6), T
+       INTEGER :: J
 
-      WRITE(*,'(A)', ADVANCE='NO') '{"tn":'
-      WRITE(*,'(I0)', ADVANCE='NO') TN
-      WRITE(*,'(A)', ADVANCE='NO') ',"elements":['
-      DO J = 1,6
-         WRITE(*,'(ES15.6)', ADVANCE='NO') E(J)
-         IF (J < 6) WRITE(*,'(A)', ADVANCE='NO') ','
-      ENDDO
-      WRITE(*,'(A)', ADVANCE='NO') '],"state":['
-      DO J = 1,6
-         WRITE(*,'(ES15.6)', ADVANCE='NO') X(J)
-         IF (J < 6) WRITE(*,'(A)', ADVANCE='NO') ','
-      ENDDO
-      WRITE(*,'(A,ES15.6,A)') '],"t":', T, '}'
+       WRITE(*,'(A)', ADVANCE='NO') '['
 
-      RETURN
-      END
+       DO J = 1,6
+       WRITE(*,'(ES20.12)', ADVANCE='NO') E(J)
+       WRITE(*,'(A)', ADVANCE='NO') ','
+       END DO
+       DO J = 1,6
+       WRITE(*,'(ES20.12)', ADVANCE='NO') X(J)
+       WRITE(*,'(A)', ADVANCE='NO') ','
+       END DO
+
+       WRITE(*,'(ES20.12)', ADVANCE='NO') T
+       WRITE(*,'(A)') ']'
+
+       RETURN
+       END
+
+
 
 
 
@@ -81,7 +83,7 @@ C Camp vectorial equacions inercials satel.lit sin J2
 C Si N=6 Equacions per pos+vel (x,y,z,xd,yd,zd) inercial. (Unit adim)
 C Si N=42 Equacions + les seves variacionals per columnes.
 C**********************************************************************
-C     Calcula el primer término de la ecuación diferencial (órbita sin perturbación)
+C     Calcula el primer t?rmino de la ecuaci?n diferencial (?rbita sin perturbaci?n)
         IMPLICIT REAL*8 (A-H,O-Z)
 C Posar els parametres iguals a totes les rutines que els tinguin !!
         PARAMETER (XMU=1.D0,RE=1.D0)
@@ -481,4 +483,6 @@ C********************************************************************
 
        RETURN
        END
+
+
 
