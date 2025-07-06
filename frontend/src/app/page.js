@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function HomePage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function HomePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
      try {
-      const res = await axios.post('http://127.0.0.1:5000/primera-formula', formData);
+      const res = await axios.post(`${backendUrl}/primera-formula`, formData);
       localStorage.setItem('resultData', JSON.stringify(res.data));
       router.push('/loading');
     } catch (err) {
