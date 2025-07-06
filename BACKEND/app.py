@@ -1,10 +1,14 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 from flasgger import Swagger
 from config import DevelopmentConfig, ProductionConfig, TestingConfig
 from routes.orbit_routes import orbit_bp
 
 app = Flask(__name__)
+
+# Habilita CORS para todos los dominios
+CORS(app)
 
 # Selecciona configuración por entorno
 env = os.environ.get("FLASK_ENV", "development")
