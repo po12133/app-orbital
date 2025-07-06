@@ -1,4 +1,3 @@
-
        PROGRAM ORBITKI
        IMPLICIT REAL*8 (A-H,O-Z)
        INTEGER :: TN, NPA, J
@@ -29,49 +28,40 @@
 
        RP=E(1)*(1-E(2))
        IF (RP.LT.1.0234375D0) THEN
-       WRITE(*,*) 'ALTITUDE OF SATELLITE IS BELOW 150 KM'
+         WRITE(*,*) 'ALTITUDE OF SATELLITE IS BELOW 150 KM'
        ENDIF
 
        PER=2.D0*PI*DSQRT(E(1)**3.D0/XMU)
        PER=REV*PER
 
        CALL CCIUEO(E,2)
-       CALL PRINT_JSON(TN,E,X,T)
+       CALL PRINT_LINE(TN, E, X, T)
 
        DO WHILE (T .LT. PER)
-       CALL RK78(T,X,N,H,HMIN,HMAX,TOLRK,R,B,F,STIN)
-       TN = TN + 1
-       CALL VAPELE(E,X)
-       CALL CCIUEO(E,2)
-       CALL PRINT_JSON(TN,E,X,T)
+         CALL RK78(T,X,N,H,HMIN,HMAX,TOLRK,R,B,F,STIN)
+         TN = TN + 1
+         CALL VAPELE(E,X)
+         CALL CCIUEO(E,2)
+         CALL PRINT_LINE(TN, E, X, T)
        END DO
-
 
        CALL CPU_TIME(T2)
        WRITE(*,*) 'TEMPS: ', T2-T1
        END
 
-      SUBROUTINE PRINT_JSON(TN, E, X, T)
-      IMPLICIT NONE
-      INTEGER :: TN, J
-      REAL*8 :: E(6), X(6), T
+       SUBROUTINE PRINT_LINE(TN, E, X, T)
+       IMPLICIT NONE
+       INTEGER :: TN
+       REAL*8 E(6), X(6), T
+       INTEGER :: J
 
-      WRITE(*,'(A)', ADVANCE='NO') '{"tn":'
-      WRITE(*,'(I0)', ADVANCE='NO') TN
-      WRITE(*,'(A)', ADVANCE='NO') ',"elements":['
-      DO J = 1,6
-         WRITE(*,'(ES20.12)', ADVANCE='NO') E(J)
-         IF (J < 6) WRITE(*,'(A)', ADVANCE='NO') ','
-      ENDDO
-      WRITE(*,'(A)', ADVANCE='NO') '],"state":['
-      DO J = 1,6
-         WRITE(*,'(ES20.12)', ADVANCE='NO') X(J)
-         IF (J < 6) WRITE(*,'(A)', ADVANCE='NO') ','
-      ENDDO
-      WRITE(*,'(A,ES20.12,A)') '],"t":', T, '}'
+       WRITE(*,'(I4,13E20.12)') TN, (E(J),J=1,6), (X(J),J=1,6), T
+100    FORMAT(14E20.12)
 
-      RETURN
-      END
+       RETURN
+       END
+
+
 
 
 
@@ -82,7 +72,7 @@ C Camp vectorial equacions inercials satel.lit sin J2
 C Si N=6 Equacions per pos+vel (x,y,z,xd,yd,zd) inercial. (Unit adim)
 C Si N=42 Equacions + les seves variacionals per columnes.
 C**********************************************************************
-C     Calcula el primer término de la ecuación diferencial (órbita sin perturbación)
+C     Calcula el primer t?rmino de la ecuaci?n diferencial (?rbita sin perturbaci?n)
         IMPLICIT REAL*8 (A-H,O-Z)
 C Posar els parametres iguals a totes les rutines que els tinguin !!
         PARAMETER (XMU=1.D0,RE=1.D0)
@@ -482,4 +472,7 @@ C********************************************************************
 
        RETURN
        END
+
+
+
 
