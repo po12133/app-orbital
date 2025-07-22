@@ -9,11 +9,19 @@ const OrbitalGraph = dynamic(() => import('@/components/OrbitalGraph'), {
 });
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  borderRadius: '6px',
+  border: '1px solid #ccc'
+};
+
 
 export default function DashboardPage() {
   const [formData, setFormData] = useState({
-    a: '', e: '', i: '', nrev: '', omega: '', theta: '', w: '',
+    a: '', e: '', i: '', nrev: '', omega: '', theta: '', w: ''
   });
+  const [tipoVisualizacion, setTipoVisualizacion] = useState('orbital');
   const [graphData, setGraphData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,11 +29,21 @@ export default function DashboardPage() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleOrbitaChange = (e) => {
+    setTipoVisualizacion(e.target.value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post(`${backendUrl}/primera-formula`, formData);
+      let res;
+      if (tipoVisualizacion === 'orbital') {
+        res = await axios.post(`${backendUrl}/primera-formula`, formData);
+      }
+      else if (tipoVisualizacion === 'tierra') {
+        res = await axios.post(`${backendUrl}/segunda-formula`, formData);
+      }
       setGraphData(res.data.data);
     } catch (err) {
       alert('Error al enviar: ' + err.message);
@@ -60,28 +78,158 @@ export default function DashboardPage() {
         <p style={{ marginBottom: '1rem', opacity: 0.8 }}>Inserta tus parámetros</p>
 
         <form onSubmit={handleSubmit}>
-          {Object.keys(formData).map((key) => (
-            <div key={key} style={{ marginBottom: '1rem' }}>
-              <label htmlFor={key} style={{ display: 'block', marginBottom: '0.3rem' }}>
-                {key.toUpperCase()}
-              </label>
-              <input
-                type="number"
-                step="any"
-                id={key}
-                name={key}
-                value={formData[key]}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc'
-                }}
-              />
-            </div>
-          ))}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="tipoVisualizacion" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Tipo de órbita
+            </label>
+            <select
+              id="tipoVisualizacion"
+              name="tipoVisualizacion"
+              value={tipoVisualizacion}
+              onChange={handleOrbitaChange}
+              style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '6px',
+                    border: '1px solid #ccc'
+                  }}
+            >
+              <option value="orbital">Orbita periodica</option>
+              <option value="tierra">Orbita con perturbacion</option>
+            </select>
+          </div>
+         {/* Semi-eje mayor */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="a" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              A - Semi-eje mayor (km / h)
+            </label>
+            <input
+              type="number"
+              id="a"
+              name="a"
+              value={formData.a}
+              onChange={handleChange}
+              min="6378"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Excentricidad */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="e" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              E - Excentricidad
+            </label>
+            <input
+              type="number"
+              id="e"
+              name="e"
+              value={formData.e}
+              onChange={handleChange}
+              min="0"
+              max="0.9999"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Inclinación */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="i" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              I - Inclinación (°)
+            </label>
+            <input
+              type="number"
+              id="i"
+              name="i"
+              value={formData.i}
+              onChange={handleChange}
+              min="0"
+              max="180"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Número de revoluciones */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="nrev" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              NREV - Número de revoluciones
+            </label>
+            <input
+              type="number"
+              id="nrev"
+              name="nrev"
+              value={formData.nrev}
+              onChange={handleChange}
+              min="0"
+              max="5000"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Longitud del nodo ascendente */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="omega" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Ω - Longitud nodo ascendente (°)
+            </label>
+            <input
+              type="number"
+              id="omega"
+              name="omega"
+              value={formData.omega}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Anomalía verdadera */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="theta" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Θ - Argumento del perigeo (°)
+            </label>
+            <input
+              type="number"
+              id="theta"
+              name="theta"
+              value={formData.theta}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Argumento del periastro */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="w" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              ω (°)
+            </label>
+            <input
+              type="number"
+              id="w"
+              name="w"
+              value={formData.w}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+       
           <button type="submit" style={{
             width: '100%',
             padding: '12px',
