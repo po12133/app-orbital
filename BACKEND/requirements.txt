@@ -10,3 +10,6 @@ python-dotenv>=1.0.0
 
 # Por si usas requests en alguna parte del código o futura integración
 requests>=2.31.0
+
+# Para habilitar CORS en tu API Flask
+flask-cors>=4.0.0
