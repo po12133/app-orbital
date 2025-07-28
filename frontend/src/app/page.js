@@ -51,6 +51,28 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   };
+  const generarCSV = (data) => {
+    const headers = [
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'
+    ];
+
+    const rows = data.map((fila) => fila.join(','));
+    return [headers.join(','), ...rows].join('\n');
+  };
+  const descargarCSV = () => {
+    if (!graphData) return;
+    const csv = generarCSV(graphData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'resultados_orbita.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
@@ -101,7 +123,7 @@ export default function DashboardPage() {
          {/* Semi-eje mayor */}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="a" style={{ display: 'block', marginBottom: '0.3rem' }}>
-              A - Semi-eje mayor (km / h)
+              A - Semi-eje mayor (km)
             </label>
             <input
               type="number"
@@ -243,6 +265,25 @@ export default function DashboardPage() {
             CARGAR GRÁFICO
           </button>
         </form>
+        {graphData && (
+        <button
+          onClick={descargarCSV}
+          style={{
+            marginTop: '10px',
+            width: '100%',
+            padding: '12px',
+            background: '#00ffcc',
+            color: 'black',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          DESCARGAR RESULTADOS
+        </button>
+      )}
+
       </aside>
 
       {/* Main - Gráfico */}
