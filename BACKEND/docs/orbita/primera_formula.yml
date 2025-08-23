@@ -1,0 +1,150 @@
+summary: Ejecutar simulación orbital
+description: Ejecuta una simulación orbital con parámetros keplerianos
+tags:
+  - Orbita
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          a:
+            type: number
+            format: float
+            description: Semi-eje mayor (km)
+            example: 7000
+            minimum: 1
+          e:
+            type: number
+            format: float
+            description: Excentricidad
+            example: 0.001
+            minimum: 0
+            maximum: 1
+          i:
+            type: number
+            format: float
+            description: Inclinación (grados)
+            example: 98.7
+            minimum: 0
+            maximum: 180
+          omega:
+            type: number
+            format: float
+            description: Longitud del nodo ascendente (grados)
+            example: 120.0
+            minimum: 0
+            maximum: 360
+          w:
+            type: number
+            format: float
+            description: Argumento del periapsis (grados)
+            example: 87.0
+            minimum: 0
+            maximum: 360
+          theta:
+            type: number
+            format: float
+            description: Anomalía verdadera inicial (grados)
+            example: 0.0
+            minimum: 0
+            maximum: 360
+          nrev:
+            type: integer
+            description: Número de revoluciones
+            example: 20
+            minimum: 1
+        required:
+          - a
+          - e
+          - i
+          - omega
+          - w
+          - theta
+          - nrev
+      examples:
+        ejemplo_basico:
+          summary: Órbita LEO típica
+          description: Ejemplo de una órbita terrestre baja típica
+          value:
+            a: 7000
+            e: 0.001
+            i: 98.7
+            omega: 120.0
+            w: 87.0
+            theta: 0.0
+            nrev: 20
+responses:
+  '200':
+    description: Simulación ejecutada correctamente
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            codigo_salida:
+              type: integer
+              description: Código de salida del proceso
+              example: 0
+            data:
+              type: array
+              description: Datos de la simulación orbital
+              items:
+                type: object
+                properties:
+                  tiempo:
+                    type: number
+                    description: Tiempo en segundos
+                  x:
+                    type: number
+                    description: Posición X (km)
+                  y:
+                    type: number
+                    description: Posición Y (km)
+                  z:
+                    type: number
+                    description: Posición Z (km)
+                  vx:
+                    type: number
+                    description: Velocidad X (km/s)
+                  vy:
+                    type: number
+                    description: Velocidad Y (km/s)
+                  vz:
+                    type: number
+                    description: Velocidad Z (km/s)
+            errores:
+              type: string
+              description: Mensajes de error si los hay
+              example: ""
+  '400':
+    description: Parámetros inválidos
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Parámetros orbitales inválidos"
+  '415':
+    description: Content-Type no soportado
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Content-Type debe ser application/json"
+  '500':
+    description: Error interno del servidor
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Error ejecutando simulación"
