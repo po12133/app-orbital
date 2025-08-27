@@ -1,151 +1,308 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import dynamic from 'next/dynamic';
 
-export default function HomePage() {
-  const router = useRouter();
+const OrbitalGraph = dynamic(() => import('@/components/OrbitalGraph'), {
+  ssr: false,
+});
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  borderRadius: '6px',
+  border: '1px solid #ccc'
+};
+
+
+export default function DashboardPage() {
   const [formData, setFormData] = useState({
-    a: '',
-    e: '',
-    i: '',
-    nrev: '',
-    omega: '',
-    theta: '',
-    w: '',
+    a: '', e: '', i: '', nrev: '', omega: '', theta: '', w: ''
   });
+  const [tipoVisualizacion, setTipoVisualizacion] = useState('orbital');
+  const [graphData, setGraphData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-     try {
-      const res = await axios.post('http://127.0.0.1:5000/primera-formula', formData);
-      localStorage.setItem('resultData', JSON.stringify(res.data));
-      router.push('/loading');
-    } catch (err) {
-      alert('Error al enviar: ' + err.message);
-    }
+  const handleOrbitaChange = (e) => {
+    setTipoVisualizacion(e.target.value);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      let res;
+      if (tipoVisualizacion === 'orbital') {
+        res = await axios.post(`${backendUrl}/primera-formula`, formData);
+      }
+      else if (tipoVisualizacion === 'tierra') {
+        res = await axios.post(`${backendUrl}/segunda-formula`, formData);
+      }
+      setGraphData(res.data.data);
+    } catch (err) {
+      alert('Error al enviar: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const generarCSV = (data) => {
+    const headers = [
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'
+    ];
+
+    const rows = data.map((fila) => fila.join(','));
+    return [headers.join(','), ...rows].join('\n');
+  };
+  const descargarCSV = () => {
+    if (!graphData) return;
+    const csv = generarCSV(graphData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'resultados_orbita.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    <div style={{ display: 'flex', height: '100vh' }}>
+      {/* Sidebar - Formulario */}
+      <aside style={{
+        width: '350px',
+        background: 'black',
+        color: 'white',
+        borderRadius: '20px',
+        borderColor: `white`,
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        padding: '2rem',
+        overflowY: 'auto'
+      }}>
+        <h1 style={{
+          background: 'linear-gradient(90deg, #9d00ff, #00ffcc)',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+          fontSize: '2rem',
+          fontWeight: 'bold'
+        }}>
+          Determinación orbital de satélites artificiales terrestres
+        </h1>
+        <p style={{ marginBottom: '1rem', opacity: 0.8 }}>Inserta tus parámetros</p>
 
-        body {
-          font-family: 'Poppins', sans-serif;
-          background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-          min-height: 100vh;
-          overflow: auto;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        
-        .glass-card {
-          background: rgba(15, 12, 41, 0.5);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-radius: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-          width: 90%;
-          max-width: 400px;
-          padding: 2.5rem;
-          margin: 2rem;
-          position: relative;
-          z-index: 10;
-        }
-        
-        .input-field {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 50px;
-          padding: 15px 20px;
-          color: white;
-          transition: all 0.3s ease;
-          width: 100%;
-        }
-        
-        .input-field:focus {
-          background: rgba(255, 255, 255, 0.15);
-          outline: none;
-          border-color: rgba(255, 255, 255, 0.4);
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        
-        .input-field::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .btn-login {
-          background: linear-gradient(45deg, #9d00ff, #ff00ff);
-          color: white;
-          border-radius: 50px;
-          padding: 15px 0;
-          margin-top: 15px;
-          transition: all 0.3s ease;
-          border: none;
-          font-weight: 600;
-          letter-spacing: 1px;
-          width: 100%;
-          cursor: pointer;
-        }
-        
-        .btn-login:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(157, 0, 255, 0.4);
-        }
-        
-        .title {
-          background: linear-gradient(90deg, #9d00ff, #00ffcc);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          display: inline-block;
-          font-size: 2.25rem;
-          font-weight: 700;
-          margin-bottom: 0.5rem;
-          text-align: center;
-        }
-      `}</style>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="tipoVisualizacion" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Tipo de órbita
+            </label>
+            <select
+              id="tipoVisualizacion"
+              name="tipoVisualizacion"
+              value={tipoVisualizacion}
+              onChange={handleOrbitaChange}
+              style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '6px',
+                    border: '1px solid #ccc'
+                  }}
+            >
+              <option value="orbital">Orbita periodica</option>
+              <option value="tierra">Orbita con perturbacion</option>
+            </select>
+          </div>
+         {/* Semi-eje mayor */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="a" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              A - Semi-eje mayor (km)
+            </label>
+            <input
+              type="number"
+              id="a"
+              name="a"
+              value={formData.a}
+              onChange={handleChange}
+              min="6378"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
 
-      <div className="glass-card">
-        <h1 className="title">Orbital App</h1>
-        <p className="text-white opacity-80 mb-8 text-center">Inserta tus parámetros</p>
+          {/* Excentricidad */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="e" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              E - Excentricidad
+            </label>
+            <input
+              type="number"
+              id="e"
+              name="e"
+              value={formData.e}
+              onChange={handleChange}
+              min="0"
+              max="0.9999"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {Object.keys(formData).map((key) => (
-            <div key={key}>
-              <label
-                htmlFor={key}
-                className="flex items-center text-white text-sm opacity-80 mb-1"
-              >
-                <i className="fas fa-sliders-h mr-2"></i>
-                {key.toUpperCase()}
-              </label>
-              <input
-                type="text"
-                id={key}
-                name={key}
-                placeholder={`Ingresa ${key}`}
-                value={formData[key]}
-                onChange={handleChange}
-                className="input-field"
-                required
-              />
-            </div>
-          ))}
+          {/* Inclinación */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="i" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              I - Inclinación (°)
+            </label>
+            <input
+              type="number"
+              id="i"
+              name="i"
+              value={formData.i}
+              onChange={handleChange}
+              min="0"
+              max="180"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
 
-          <button type="submit" className="btn-login">
-            Enviar
+          {/* Número de revoluciones */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="nrev" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              NREV - Número de revoluciones
+            </label>
+            <input
+              type="number"
+              id="nrev"
+              name="nrev"
+              value={formData.nrev}
+              onChange={handleChange}
+              min="0"
+              max="5000"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Longitud del nodo ascendente */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="omega" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Ω - Longitud nodo ascendente (°)
+            </label>
+            <input
+              type="number"
+              id="omega"
+              name="omega"
+              value={formData.omega}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Anomalía verdadera */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="theta" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              Θ - Argumento del perigeo (°)
+            </label>
+            <input
+              type="number"
+              id="theta"
+              name="theta"
+              value={formData.theta}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Argumento del periastro */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="w" style={{ display: 'block', marginBottom: '0.3rem' }}>
+              ω (°)
+            </label>
+            <input
+              type="number"
+              id="w"
+              name="w"
+              value={formData.w}
+              onChange={handleChange}
+              min="0"
+              max="360"
+              step="any"
+              required
+              style={inputStyle}
+            />
+          </div>
+       
+          <button type="submit" style={{
+            width: '100%',
+            padding: '12px',
+            background: 'white',
+            color: 'black',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}>
+            CARGAR GRÁFICO
           </button>
         </form>
-      </div>
-    </>
+        {graphData && (
+        <button
+          onClick={descargarCSV}
+          style={{
+            marginTop: '10px',
+            width: '100%',
+            padding: '12px',
+            background: '#00ffcc',
+            color: 'black',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          DESCARGAR RESULTADOS
+        </button>
+      )}
+
+      </aside>
+
+      {/* Main - Gráfico */}
+      <main style={{ flex: 1, background: 'black', position: 'relative' }}>
+        {isLoading && (
+            <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            fontSize: '1.5rem'
+            }}>
+            Cargando...
+            </div>
+        )}
+
+        {!isLoading && graphData && <OrbitalGraph graphData={graphData} />}
+        </main>
+    </div>
   );
 }
