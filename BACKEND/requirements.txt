@@ -1,15 +1,7 @@
 Flask>=2.3
 Flasgger>=0.9.7
+Flask-Cors>=6.0.1
 python-dotenv>=1.0
-
-# Posiblemente estás usando YAML en los Swagger specs
 PyYAML>=6.0
-
-# Si usas dotenv para cargar configuración
 python-dotenv>=1.0.0
-
-# Por si usas requests en alguna parte del código o futura integración
 requests>=2.31.0
-
-# Para habilitar CORS en tu API Flask
-flask-cors>=4.0.0
